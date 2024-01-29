@@ -1,4 +1,9 @@
-
+use std::fs::File;
+use std::io;
+use std::io::Write;
+use rayon::prelude::IntoParallelIterator;
+use rayon::prelude::ParallelIterator;
+use sage_core::spectrum::{Precursor, RawSpectrum, Representation};
 
 pub fn parse(
     path_name: impl AsRef<str>,
@@ -38,7 +43,8 @@ pub fn parse(
     Ok(spectra)
 }
 
-fn main() -> anyhow::Result<()> {
+#[test]
+fn test_mgf() -> anyhow::Result<()> {
     let parse = sage_cloudpath::tdf::TdfReader.parse("F:\\data\\PXD014777\\20180809_120min_200ms_WEHI25_brute20k_timsON_100ng_HYE124A_Slot1-7_1_890.d", 1);
     let outfile = File::create("F:\\data\\PXD014777\\20180809_120min_200ms_WEHI25_brute20k_timsON_100ng_HYE124A_Slot1-7_1_890.mgf")?;
     let mut w = io::BufWriter::new(outfile);
