@@ -3,6 +3,7 @@ use std::io;
 use std::io::Write;
 use rayon::prelude::IntoParallelIterator;
 use rayon::prelude::ParallelIterator;
+use chrono::Local;
 
 #[derive(Default)]
 pub struct Precursor {
@@ -71,6 +72,7 @@ fn test_mgf() -> anyhow::Result<()> {
     let outfile = File::create("F:\\data\\PXD014777\\20180809_120min_200ms_WEHI25_brute20k_timsON_100ng_HYE124A_Slot1-7_1_890.mgf")?;
     let mut w = io::BufWriter::new(outfile);
     parse.unwrap().iter().for_each(|x| {
+        println!("{} - {} {}", Local::now().format("%Y-%m-%d %H:%M:%S").to_string(), "Reading and writing ", x.id);
         if x.precursors[0].mz==0.0 {
             return;
         }
