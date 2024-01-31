@@ -3,7 +3,32 @@ use std::io;
 use std::io::Write;
 use rayon::prelude::IntoParallelIterator;
 use rayon::prelude::ParallelIterator;
-use sage_core::spectrum::{Precursor, RawSpectrum, Representation};
+
+#[derive(Default)]
+pub struct Precursor {
+    pub mz: f32,
+    pub intensity: Option<f32>,
+    pub charge: Option<u8>,
+    pub spectrum_ref: Option<String>,
+}
+
+pub struct RawSpectrum {
+    pub file_id: usize,
+    pub ms_level: u8,
+    pub id: String,
+    pub precursors: Vec<Precursor>,
+    pub representation: Representation,
+    pub scan_start_time: f32,
+    pub ion_injection_time: f32,
+    pub total_ion_current: f32,
+    pub mz: Vec<f32>,
+    pub intensity: Vec<f32>,
+}
+
+pub enum Representation {
+    Profile,
+    Centroid,
+}
 
 pub fn parse(
     path_name: impl AsRef<str>,
@@ -20,7 +45,6 @@ pub fn parse(
                 dda_spectrum.precursor.unwrap_as_precursor();
             precursor.mz = dda_precursor.mz as f32;
             precursor.charge = Option::from(dda_precursor.charge as u8);
-            // precursor.ion_mobility = Option::from(dda_precursor.im as f32);
             precursor.intensity = Option::from(dda_precursor.intensity as f32);
             precursor.spectrum_ref = Option::from(dda_precursor.frame_index.to_string());
             let spectrum: RawSpectrum = RawSpectrum {
@@ -33,8 +57,6 @@ pub fn parse(
                 mz: dda_spectrum.mz_values.iter().map(|&x| x as f32).collect(),
                 ms_level: 2,
                 id: dda_precursor.index.to_string(),
-                // precursor_id: dda_precursor.index as u32,
-                // frame_id: dda_precursor.frame_index as u32,
                 intensity: dda_spectrum.intensities.iter().map(|&x| x as f32).collect(),
             };
             spectrum
@@ -45,7 +67,7 @@ pub fn parse(
 
 #[test]
 fn test_mgf() -> anyhow::Result<()> {
-    let parse = sage_cloudpath::tdf::TdfReader.parse("F:\\data\\PXD014777\\20180809_120min_200ms_WEHI25_brute20k_timsON_100ng_HYE124A_Slot1-7_1_890.d", 1);
+    let parse = parse("F:\\data\\PXD014777\\20180809_120min_200ms_WEHI25_brute20k_timsON_100ng_HYE124A_Slot1-7_1_890.d", 1);
     let outfile = File::create("F:\\data\\PXD014777\\20180809_120min_200ms_WEHI25_brute20k_timsON_100ng_HYE124A_Slot1-7_1_890.mgf")?;
     let mut w = io::BufWriter::new(outfile);
     parse.unwrap().iter().for_each(|x| {
