@@ -4,6 +4,8 @@ use std::io::Write;
 use rayon::prelude::IntoParallelIterator;
 use rayon::prelude::ParallelIterator;
 use chrono::Local;
+use std::time::{Instant, Duration};
+
 
 #[derive(Default)]
 pub struct Precursor {
@@ -68,20 +70,33 @@ pub fn parse(
 
 #[test]
 fn test_mgf() -> anyhow::Result<()> {
-    let parse = parse("F:\\data\\PXD014777\\20180809_120min_200ms_WEHI25_brute20k_timsON_100ng_HYE124A_Slot1-7_1_890.d", 1);
-    let outfile = File::create("F:\\data\\PXD014777\\20180809_120min_200ms_WEHI25_brute20k_timsON_100ng_HYE124A_Slot1-7_1_890.mgf")?;
+    let start = Instant::now();
+
+    let rootDir = "";
+    let runName = "";
+
+    let p = rootDir.to_string() + &runName + ".d";
+    println!("Reading {:?}", p);
+
+    let parse = parse(p, 1);
+
+    println!("Time elapsed in parse is: {:?}", start.elapsed());
+
+    let p2 = rootDir.to_string() + &runName + ".mgf";
+    println!("Writing {:?}", p2);
+
+    let outfile = File::create(p2)?;
     let mut w = io::BufWriter::new(outfile);
     parse.unwrap().iter().for_each(|x| {
-        println!("{} - {} {}", Local::now().format("%Y-%m-%d %H:%M:%S").to_string(), "Reading and writing ", x.id);
         if x.precursors[0].mz==0.0 {
             return;
         }
-        let l = format!("BEGIN IONS\nTITLE=\"index: {}, intensity: {}, average_mz: {}\"\nRTINSECONDS={}\nPEPMASS={}\nCHARGE={}+\n{}\nEND IONS\n",
-                        x.id, x.precursors[0].intensity.unwrap(),
-                        x.precursors[0].mz,
-                        //x.mz.iter().sum::<f32>() / x.intensity.len() as f32,
+        if x.mz.len() == 0 {
+            return;
+        }
+        let l = format!("BEGIN IONS\nTITLE={}.{}.{}.{}\nRTINSECONDS={}\nPEPMASS={}\nCHARGE={}+\n{}\nEND IONS\n",
+                        runName, x.id, x.id, x.precursors[0].charge.unwrap(),
                         x.scan_start_time, x.precursors[0].mz, x.precursors[0].charge.unwrap(),
-                        // x.mz.iter().zip(&x.intensity).map(|(&mz, &intensity)| format!("{} {}", mz, intensity)).collect::<Vec<_>>().join("\n")
                         std::iter::zip(&x.mz,&x.intensity).map(|(&mz, &intensity)| format!("{} {}", mz, intensity)).collect::<Vec<_>>().join("\n")
         );
         w.write_all(l.as_ref()).unwrap();
