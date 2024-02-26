@@ -30,6 +30,8 @@ mod frames;
 mod precursors;
 mod spectra;
 mod vec_utils;
+mod jni_bindings;
+mod spectra_proto;
 
 pub use crate::{
     acquisition::AcquisitionType,

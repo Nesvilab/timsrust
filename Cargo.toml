@@ -12,6 +12,9 @@ categories = ["accessibility", "data-structures", "parsing", "science"]
 keywords = ["MS", "LC-TIMS-TOF", "PASEF"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "timsrust"
+crate-type = ["cdylib"]
 
 [dependencies]
 byteorder = "1.4.3"
@@ -25,6 +28,12 @@ thiserror = "1.0.0"
 memmap2 = "0.9.3"
 anyhow = "1.0.79"
 chrono = "0.4"
+jni = "0.21.1"
+prost = "0.12"
+prost-types = "0.12"
+
+[build-dependencies]
+prost-build = "0.12"
 
 [dev-dependencies]
 criterion = { version = "0.4", features = ["html_reports"] }

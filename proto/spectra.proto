@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package com.rogerli;
+
+option java_package = "com.rogerli.batmass.io.timsrust.api";
+option java_outer_classname = "SpectraProto";
+
+message Spectra {
+  repeated Spectrum spectra = 1;
+}
+
+message Spectrum {
+  repeated double mzValues = 1;
+  repeated double intensities = 2;
+  QuadrupoleEvent precursor = 3;
+  uint32 index = 4; // Note: Protobuf does not have a direct equivalent to Rust's usize, using uint32.
+}
+
+message Precursor {
+  double mz = 1;
+  double rt = 2;
+  double im = 3;
+  uint32 charge = 4; // Using uint32 as a practical equivalent to usize for charge.
+  double intensity = 5;
+  uint32 index = 6;
+  uint32 frameIndex = 7;
+  double collisionEnergy = 8;
+}
+
+// A type of quadrupole selection.
+message QuadrupoleEvent {
+  oneof event {
+    Precursor precursor = 1;
+    // Define other events as needed.
+  }
+}
